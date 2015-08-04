@@ -1,8 +1,7 @@
 <?php
 
 # Required File Includes
-include("../../../dbconnect.php");
-include("../../../includes/functions.php");
+include("../../../init.php");
 include("../../../includes/gatewayfunctions.php");
 include("../../../includes/invoicefunctions.php");
 require_once "../lib/lib-khipu/src/Khipu.php";
@@ -20,7 +19,7 @@ $api_version = $_POST['api_version'];
 if($api_version == '1.2') {
     $Khipu = new Khipu();
     $Khipu->authenticate($GATEWAY['receiver_id'], $GATEWAY['secret']);
-    $Khipu->setAgent('whmcs-2.0;;'.$GATEWAY['systemurl'].';;');
+    $Khipu->setAgent('whmcs-2.1;;'.$GATEWAY['systemurl'].';;');
     $service = $Khipu->loadService('VerifyPaymentNotification');
     $service->setDataFromPost();
     if ($_POST['receiver_id'] != $GATEWAY['receiver_id']) {
@@ -55,7 +54,7 @@ if($api_version == '1.2') {
 } else if($api_version == '1.3') {
     $Khipu = new Khipu();
     $Khipu->authenticate($GATEWAY['receiver_id'], $GATEWAY['secret']);
-    $Khipu->setAgent('whmcs-2.0;;'.$GATEWAY['systemurl'].';;');
+    $Khipu->setAgent('whmcs-2.1;;'.$GATEWAY['systemurl'].';;');
     $service = $Khipu->loadService('GetPaymentNotification');
     $service->setDataFromPost();
     $response = json_decode($service->consult());

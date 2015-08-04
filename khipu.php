@@ -14,7 +14,7 @@ function khipu_link($params) {
 
     $Khipu = new Khipu();
     $Khipu->authenticate($params['receiver_id'], $params['secret']);
-    $Khipu->setAgent('whmcs-2.0;;'.$params['systemurl'].';;');
+    $Khipu->setAgent('whmcs-2.1;;'.$params['systemurl'].';;');
 
     $khipu_service = $Khipu->loadService('CreatePaymentPage');
 
