@@ -10,11 +10,11 @@ function khipu_config() {
 }
 
 function khipu_link($params) {
-    require_once "./lib/lib-khipu/src/Khipu.php";
+    require_once __DIR__ . "/lib/lib-khipu/src/Khipu.php";
 
     $Khipu = new Khipu();
     $Khipu->authenticate($params['receiver_id'], $params['secret']);
-    $Khipu->setAgent('whmcs-2.2;;'.$params['systemurl'].';;');
+    $Khipu->setAgent('whmcs-2.3;;'.$params['systemurl'].';;');
 
     $khipu_service = $Khipu->loadService('CreatePaymentPage');
 
