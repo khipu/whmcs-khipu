@@ -10,32 +10,35 @@ function khipu_config() {
 }
 
 function khipu_link($params) {
-    require_once __DIR__ . "/lib/lib-khipu/src/Khipu.php";
-
-    $Khipu = new Khipu();
-    $Khipu->authenticate($params['receiver_id'], $params['secret']);
-    $Khipu->setAgent('whmcs-2.3;;'.$params['systemurl'].';;');
-
-    $khipu_service = $Khipu->loadService('CreatePaymentPage');
 
     $data = array(
         'subject' => $params['description'],
-        'body' => '',
-        'amount' => intval($params['amount']),
+        'currency' => $params['currency'],
+        'amount' => khipu_number_format($params['amount'], $params['currency']),
         'return_url' => $params['systemurl'].'/viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=true',
         'cancel_url' => $params['systemurl'].'/viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=false',
         'payer_email' => $params['clientdetails']['email'],
-        'picture_url' => '',
-        'custom' => '',
         'notify_url' => $params['systemurl'].'/modules/gateways/callback/khipu.php',
-        'transaction_id' => $params['invoiceid']
+        'transaction_id' => $params['invoiceid'],
+        'api_version' => '1.3'
     );
 
+    $form = "<form method='POST' action='". $params['systemurl'].'/modules/gateways/callback/khipu_redirect.php' . "'>";
     foreach ($data as $name => $value) {
-        $khipu_service->setParameter($name, $value);
+        $form .= "<input type='hidden' name='". $name. "' value='" . $value. "'>";
     }
+    $form .= "<input type='image' src='https://s3.amazonaws.com/static.khipu.com/buttons/2015/150x50-transparent.png' alt='Paga con tu banco'>";
+    $form .= "</form>";
 
-	return $khipu_service->renderForm();
+	return $form;
+}
+
+function khipu_number_format($number, $currency) {
+    if($currency == 'CLP') {
+        return number_format($number, 0, '', '');
+    } else {
+        return number_format($number, 2, '.', '');
+    }
 }
 
 ?>
