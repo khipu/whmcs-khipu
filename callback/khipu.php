@@ -18,7 +18,7 @@ if($_POST['api_version'] == '1.3') {
     $configuration = new Khipu\Configuration();
     $configuration->setSecret($gatewayParams['secret']);
     $configuration->setReceiverId($gatewayParams['receiver_id']);
-    $configuration->setPlatform('whmcs-khipu', '2.4');
+    $configuration->setPlatform('whmcs-khipu', '2.5');
 
     $client = new Khipu\ApiClient($configuration);
     $payments = new Khipu\Client\PaymentsApi($client);

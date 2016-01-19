@@ -5,7 +5,6 @@ require_once __DIR__ . '/../../../init.php';
 require_once __DIR__ . '/../../../includes/gatewayfunctions.php';
 $gatewayParams = getGatewayVariables('khipu');
 
-
 // Die if module is not active.
 if (!$gatewayParams['type']) {
     die("Module Not Activated");
@@ -14,11 +13,10 @@ if (!$gatewayParams['type']) {
 $configuration = new Khipu\Configuration();
 $configuration->setSecret($gatewayParams['secret']);
 $configuration->setReceiverId($gatewayParams['receiver_id']);
-$configuration->setPlatform('whmcs-khipu', '2.4');
+$configuration->setPlatform('whmcs-khipu', '2.5');
 
 $client = new Khipu\ApiClient($configuration);
 $payments = new Khipu\Client\PaymentsApi($client);
-
 
 try {
     $createPaymentResponse = $payments->paymentsPost(
@@ -43,11 +41,22 @@ try {
         , null
         , null
     );
-} catch(\Khipu\ApiException $e) {
-    //$this->khipu_error($e->getResponseObject());
-    echo print_r($e->getResponseObject(), TRUE);
+} catch (\Khipu\ApiException $e) {
+    echo "<html><body>";
+    echo "<h1>Error " . $e->getCode() . ": " . $e->getMessage() . "</h1>";
+    $error = $e->getResponseObject();
+    if (method_exists($error, "getErrors")) {
+        echo "<ul>";
+        foreach ($error->getErrors() as $errorItem) {
+            echo "<li><strong>" . $errorItem->getField() . "</strong>: " . $errorItem->getMessage() . "</li>";
+        }
+        echo "</ul>";
+        return;
+    }
+    echo "</body></html>";
+    return;
 }
 
-header('Location: '.$createPaymentResponse->getPaymentUrl());
+header('Location: ' . $createPaymentResponse->getPaymentUrl());
 
 ?>
