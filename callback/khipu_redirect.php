@@ -13,34 +13,27 @@ if (!$gatewayParams['type']) {
 $configuration = new Khipu\Configuration();
 $configuration->setSecret($gatewayParams['secret']);
 $configuration->setReceiverId($gatewayParams['receiver_id']);
-$configuration->setPlatform('whmcs-khipu', '2.5');
+$configuration->setPlatform('whmcs-khipu', '2.6');
 
 $client = new Khipu\ApiClient($configuration);
 $payments = new Khipu\Client\PaymentsApi($client);
 
 try {
+    $opts = array(
+        "transaction_id" => $_POST['transaction_id'],
+        "return_url" => $_POST['return_url'],
+        "cancel_url" => $_POST['cancel_url'],
+        "notify_url" => $_POST['notify_url'],
+        "payer_email" => $_POST['payer_email'],
+        "notify_api_version" => "1.3",
+
+    );
     $createPaymentResponse = $payments->paymentsPost(
-        $_POST['subject']
+        $_POST['payment_subject']
         , $_POST['currency']
         , $_POST['amount']
-        , $_POST['transaction_id']
-        , null
-        , null
-        , null
-        , $_POST['return_url']
-        , $_POST['cancel_url']
-        , null
-        , $_POST['notify_url']
-        , $_POST['api_version']
-        , null
-        , null
-        , null
-        , $_POST['payer_email']
-        , null
-        , null
-        , null
-        , null
-    );
+        , $opts);
+    
 } catch (\Khipu\ApiException $e) {
     echo "<html><body>";
     echo "<h1>Error " . $e->getCode() . ": " . $e->getMessage() . "</h1>";

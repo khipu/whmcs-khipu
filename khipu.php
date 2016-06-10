@@ -12,20 +12,19 @@ function khipu_config() {
 function khipu_link($params) {
 
     $data = array(
-        'subject' => $params['description'],
+        'payment_subject' => $params['description'],
         'currency' => $params['currency'],
         'amount' => khipu_number_format($params['amount'], $params['currency']),
         'return_url' => $params['systemurl'].'/viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=true',
         'cancel_url' => $params['systemurl'].'/viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=false',
         'payer_email' => $params['clientdetails']['email'],
         'notify_url' => $params['systemurl'].'/modules/gateways/callback/khipu.php',
-        'transaction_id' => $params['invoiceid'],
-        'api_version' => '1.3'
+        'transaction_id' => $params['invoiceid']
     );
 
     $form = "<form method='POST' action='". $params['systemurl'].'/modules/gateways/callback/khipu_redirect.php' . "'>";
     foreach ($data as $name => $value) {
-        $form .= "<input type='hidden' name='". $name. "' value='" . $value. "'>";
+        $form .= "<input type='hidden' name='". $name. "' value='" . htmlspecialchars($value) . "'>";
     }
     $form .= "<input type='image' src='https://s3.amazonaws.com/static.khipu.com/buttons/2015/150x50-transparent.png' alt='Paga con tu banco'>";
     $form .= "</form>";

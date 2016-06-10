@@ -1,5 +1,5 @@
 {
     "require": {
-        "khipu/khipu-api-client": "*"
+        "khipu/khipu-api-client": "2.7.0"
     }
 }
