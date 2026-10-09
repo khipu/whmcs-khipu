@@ -1,3 +1,8 @@
-# Created by .ignore support plugin (hsz.mobi)
-khipu_module.zip
 .idea
+*.iml
+.DS_Store
+vendor/
+dist/
+composer.phar
+dev/.env
+dev/whmcs/
