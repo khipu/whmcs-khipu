@@ -31,6 +31,9 @@ class RefundRules
     /** Khipu's text for a payment with nothing left to refund (or past the 180-day window). */
     const NOT_REFUNDABLE_NEEDLE = 'no es reembolsable';
 
+    /** Khipu's text for a payment id it does not know; it comes with a 400, not a 404. */
+    const UNKNOWN_PAYMENT_NEEDLE = 'no existe';
+
     /** Below this two amounts are the same (Khipu returns 4 decimals). */
     const EPSILON = 0.00001;
 
@@ -192,6 +195,20 @@ class RefundRules
     {
         foreach ($errors as $error) {
             if (isset($error['message']) && false !== stripos($error['message'], self::NOT_REFUNDABLE_NEEDLE)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return bool whether the errors say Khipu does not know the payment
+     */
+    public static function isUnknownPayment(array $errors)
+    {
+        foreach ($errors as $error) {
+            if (isset($error['message']) && false !== stripos($error['message'], self::UNKNOWN_PAYMENT_NEEDLE)) {
                 return true;
             }
         }

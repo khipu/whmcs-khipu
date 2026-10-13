@@ -92,7 +92,44 @@ paid invoice → **Refund** tab → pick the Khipu transaction → Refund Type *
 `./last-payments.sh` shows the refund row (`refundid` pointing at the payment) and the
 gateway log entry with `resultado`. The wallet balance shows in Billing > Transactions List.
 
-## 5. Stop
+## 5. Integration tests
+
+`tests-integration/` runs inside the dev WHMCS against the real Khipu API, with the
+account configured in step 2. **Use a demo (DemoBank) account**: some tests refund small
+amounts.
+
+```bash
+./integration-test.sh 9.0.9                          # the suite (starts and stops the tunnel)
+./integration-test.sh 9.0.9 -- --filter WebhookTest  # extra PHPUnit arguments
+```
+
+What runs without anyone paying: the pay button against real payments (amounts, CLP
+rounding, signed `custom`, currency conversion, tampered and expired forms), the webhook
+against real payments (unpaid, already recorded, the 2.x notification through the v2
+API, the lock, refusals), and refunds Khipu turns down (fully refunded, unknown payment,
+bad API Key), the refund lock and the wallet balance. Unpaid payments it creates expire
+on their own.
+
+Refunds that succeed need a paid payment. Seed one, once:
+
+```bash
+./integration-test.sh 9.0.9 seed
+```
+
+It prints two payment links to pay in the demo bank and waits up to 20 minutes:
+
+1. a normal payment of $1.001 for a 1,000.50 invoice: the webhook must record 1,000.50;
+2. a payment whose `custom` was forged without the Llave secreta: the webhook must refuse
+   it and leave its invoice unpaid.
+
+After that, every run refunds about $4 of the first one, so it lasts a few hundred runs.
+
+If WHMCS lacks a USD or a CLP currency, the suite adds it (1 USD = 950 CLP).
+
+The runner refuses to start if WHMCS is not verifying its license: WHMCS's own API then
+rejects calls the pay button needs, and those failures would look like module bugs.
+
+## 6. Stop
 
 ```bash
 ./up.sh 9.0.9 down     # keeps the database
@@ -108,5 +145,6 @@ gateway log entry with `resultado`. The wallet balance shows in Billing > Transa
 | "No pudimos iniciar el pago con Khipu" | No tunnel (Khipu rejects a localhost `notify_url`), or wrong API Key. The gateway log has Khipu's reason |
 | Changes to a module file do not show | See §2: restart the container |
 | ionCube error on start | The loader must match the PHP minor; `up.sh` picks it from the WHMCS version |
+| `integration-test.sh` says the license is not verified | Open the admin area: WHMCS shows its license error page and why. Fix it there or in the WHMCS client area, then run again |
 
 This directory is development only: `package.sh` does not ship it.

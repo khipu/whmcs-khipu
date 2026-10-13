@@ -51,7 +51,10 @@ class RefundProcessor
                 return $this->answer('declined', 'Khipu rechazó la API Key configurada: revísala en la configuración de Khipu. No se devolvió dinero.', $log);
             }
 
-            if (404 === $before['http']) {
+            // The text only counts on a rejection: a 5xx saying it is a retry, not a verdict.
+            if (404 === $before['http']
+                || (RefundRules::OUTCOME_REJECTED === $before['outcome'] && RefundRules::isUnknownPayment($before['errors']))
+            ) {
                 return $this->answer('declined', 'Khipu no encuentra este pago. Si lo registró la versión 2.x del módulo, su ID no es un payment_id: haz la reversa desde el portal de Khipu. No se devolvió dinero.', $log);
             }
 

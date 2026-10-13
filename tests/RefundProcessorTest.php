@@ -139,6 +139,32 @@ class RefundProcessorTest extends TestCase
         $this->assertSame('Khipu rechazó la consulta del pago: Identificador inválido. No se devolvió dinero.', $result['rawdata']['resultado']);
     }
 
+    public function testPaymentKhipuSaysDoesNotExistGetsTheVersion2Hint()
+    {
+        // What the live API answers for an unknown id: a 400, not a 404.
+        $transport = new FakeTransport(array(array('status' => 400, 'body' => array(
+            'status' => 400, 'message' => 'Error de validación',
+            'errors' => array(array('field' => 'id', 'message' => 'El pago con ID zzzzzzzzzzzz no existe')),
+        ))));
+
+        $result = $this->refundWith($transport, '10', 'CLP', 'zzzzzzzzzzzz');
+
+        $this->assertSame('declined', $result['status']);
+        $this->assertStringContainsString('2.x', $result['rawdata']['resultado']);
+    }
+
+    public function testServerErrorSayingNoExisteIsStillRetryable()
+    {
+        $transport = new FakeTransport(array(array('status' => 503, 'body' => array(
+            'errors' => array(array('field' => 'id', 'message' => 'El pago con ID x no existe')),
+        ))));
+
+        $result = $this->refundWith($transport);
+
+        $this->assertSame('error', $result['status']);
+        $this->assertStringContainsString('puedes reintentar', $result['rawdata']['resultado']);
+    }
+
     public function testUnreachableKhipuBeforeRefundingIsSafeToRetry()
     {
         $transport = new FakeTransport(array(array('status' => 0, 'error' => 'timeout')));

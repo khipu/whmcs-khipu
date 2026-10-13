@@ -164,6 +164,12 @@ class RefundRulesTest extends TestCase
         $this->assertFalse(RefundRules::isWalletDisabled($errors));
     }
 
+    public function testUnknownPaymentIsRecognised()
+    {
+        $this->assertTrue(RefundRules::isUnknownPayment(array(array('field' => 'id', 'message' => 'El pago con ID x no existe'))));
+        $this->assertFalse(RefundRules::isUnknownPayment(array(array('field' => 'payment_id', 'message' => 'El pago no es reembolsable'))));
+    }
+
     public function testErrorTextFallsBackToTheHttpCode()
     {
         $this->assertSame('a. b', RefundRules::errorText(array(array('field' => '', 'message' => 'a'), array('field' => '', 'message' => 'b.')), 400));

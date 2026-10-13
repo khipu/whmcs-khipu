@@ -33,7 +33,8 @@ khipu/                          Library, no WHMCS dependencies (namespace KhipuW
   Gateway.php                   Small helpers shared by the WHMCS entry points
 
 tests/                          PHPUnit 8.5 on the library (no WHMCS, no network)
-dev/                            Local WHMCS 8.13 / 9.0 in Docker
+tests-integration/              PHPUnit inside the dev WHMCS, against the Khipu demo account
+dev/                            Local WHMCS 8.13 / 9.0 in Docker, integration-test.sh
 package.sh                      Builds dist/whmcs-khipu.zip
 ```
 
@@ -211,8 +212,9 @@ inside Billing > Transactions List).
 ### 3.2 `RefundProcessor::refund()`
 
 1. Empty `transid` → `declined`, nothing sent.
-2. `GET /v3/payments/{transid}`. 401/403 → `declined`, the API Key is wrong. 404 →
-   `declined`, Khipu does not know the payment (typically a 2.x transaction whose id is
+2. `GET /v3/payments/{transid}`. 401/403 → `declined`, the API Key is wrong. 404, or a
+   400 saying the payment "no existe" (what the live API answers) → `declined`, Khipu
+   does not know the payment (typically a 2.x transaction whose id is
    a notification token). Other 4xx → `declined` with Khipu's reason. Anything else →
    `error`, safe to retry: nothing was sent.
 3. With *Convert To For Processing*, WHMCS converts the refund into the processing
@@ -322,6 +324,14 @@ New logic should stay testable the same way: anything that needs the network tak
 injectable transport (`Client`, `LegacyClient`); anything that decides goes in a pure
 class. Code inside the three WHMCS entry points cannot be tested without WHMCS.
 
+### Integration tests
+
+`tests-integration/` (PHPUnit, `phpunit.integration.xml`) runs inside the dev WHMCS
+against the real Khipu API with a demo account: `dev/integration-test.sh <version>`. It
+covers what unit tests cannot reach: the three WHMCS entry points, WHMCS's own API, MySQL
+locks and Khipu's live answers. See [dev/README.md](../dev/README.md) for the one-time
+seed (two payments paid by hand) that the refund-success tests need.
+
 Syntax check on both ends of the supported range:
 
 ```bash
@@ -349,7 +359,8 @@ where it could clash with other gateways; 3.x keeps everything in `modules/gatew
 ### Release checklist
 
 1. `khipu/Version.php` → `PLUGIN`, and the version in `README.md` and both manuals.
-2. Tests green on PHP 7.2 and 8.3; lint on 7.2 and 8.4.
+2. Tests green on PHP 7.2 and 8.3; lint on 7.2 and 8.4; integration suite green on the
+   dev WHMCS 9.0 (and 8.13 when a license allows it).
 3. Try the zip on WHMCS 8.13 and 9.0 (`dev/`), **over a 2.x install** too: the upgrade
    path is what breaks in production.
 4. `./package.sh`, GitHub release with `dist/whmcs-khipu.zip` attached.
