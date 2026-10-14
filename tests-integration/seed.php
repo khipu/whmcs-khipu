@@ -66,6 +66,21 @@ while (time() < $deadline && !($genuineDone && $forgedDone)) {
     }
 }
 
+// Unpaid payments say nothing about the webhook: report that instead of
+// checks that would fail (or pass) for the wrong reason.
+$unpaid = array();
+foreach (array($genuine => $genuineInvoice, $forged => $forgedInvoice) as $paymentId => $invoiceId) {
+    $lookup = Whmcs::khipu()->getPayment($paymentId);
+    if ($lookup['ok'] && 'done' !== $lookup['data']['status']) {
+        $unpaid[] = $paymentId . ' (invoice ' . $invoiceId . ')';
+    }
+}
+if ($unpaid) {
+    echo "  NOT PAID in time, still pending at Khipu: " . implode(', ', $unpaid) . "\n";
+    echo "  Nothing was checked. Run the seed again when you can pay right away: these links die with this tunnel.\n";
+    exit(2);
+}
+
 $checks = array(
     'genuine payment recorded' => 1 === Whmcs::rows($genuine),
     'genuine payment recorded for the invoice amount (1000.50)' => abs((float) Capsule::table('tblaccounts')->where('transid', $genuine)->value('amountin') - 1000.50) < 0.001,

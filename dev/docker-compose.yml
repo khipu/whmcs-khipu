@@ -51,7 +51,9 @@ services:
       # single-file mounts: an editor that saves by replacing a file leaves a
       # single-file mount on the old copy.
       - ..:/opt/khipu-module:ro
-      - ../callback:/var/www/html/modules/gateways/callback:ro
+      # install-module.sh points this at the tree's own callback directory
+      # when the module is installed from a zip or an old release instead.
+      - ${KHIPU_CALLBACK_SOURCE:-../callback}:/var/www/html/modules/gateways/callback:${KHIPU_CALLBACK_ACCESS:-ro}
 
   # Public https URL: Khipu refuses a notify_url on localhost. Started by
   # ./tunnel.sh, which also points WHMCS's System URL at it.

@@ -49,6 +49,22 @@ The module files are bind-mounted one by one (the callbacks find `init.php` thro
 replacing the file can leave the container on the old copy; if a change does not show,
 `./up.sh 9.0.9` again or `docker compose -p whmcs-909 restart whmcs`.
 
+### Install the module the way merchants do
+
+By default the module runs live from the repository. To try what merchants get:
+
+```bash
+./install-module.sh 9.0.9 zip            # dist/whmcs-khipu.zip extracted at the WHMCS root
+./install-module.sh 9.0.9 git aec2d01    # version 2.6 with its vendor/, to test the upgrade
+./install-module.sh 9.0.9 repo           # back to the repository
+```
+
+`zip` installs over whatever is there, like a merchant upgrading: `git aec2d01`, then
+`zip`, is the 2.x upgrade. The gateway settings in the database are not touched; 2.6
+only knows ID Cobrador and Llave secreta, so after the upgrade fill the API Key, as the
+merchant manual says. Files are written from inside the container: Docker Desktop's file
+sharing can keep serving a path's old target when it changes on the host.
+
 ## 3. Try a payment
 
 **A tunnel is required.** Khipu refuses to create a payment whose `notify_url` points at

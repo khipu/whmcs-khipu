@@ -26,7 +26,17 @@ whmcs_env() {
     PROJECT="whmcs-${WHMCS_VERSION//./}"
     HOST_UID="$(id -u)"
     HOST_GID="$(id -g)"
-    export WHMCS_VERSION PHP_VERSION WHMCS_PORT HOST_UID HOST_GID
+
+    # How the module is installed in this tree (install-module.sh): "repo"
+    # serves the callbacks from the repository, anything else from the tree.
+    KHIPU_CALLBACK_SOURCE="../callback"
+    KHIPU_CALLBACK_ACCESS="ro"
+    if [ "$(cat "$DEV_DIR/whmcs/$WHMCS_VERSION/.khipu-module" 2>/dev/null || echo repo)" != "repo" ]; then
+        KHIPU_CALLBACK_SOURCE="./whmcs/$WHMCS_VERSION/modules/gateways/callback"
+        KHIPU_CALLBACK_ACCESS="rw"
+    fi
+
+    export WHMCS_VERSION PHP_VERSION WHMCS_PORT HOST_UID HOST_GID KHIPU_CALLBACK_SOURCE KHIPU_CALLBACK_ACCESS
 }
 
 dc() {
