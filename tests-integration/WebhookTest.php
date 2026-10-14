@@ -119,10 +119,11 @@ class WebhookTest extends TestCase
     public function testVersion2PaymentRecordedWithoutGatewayIsNotRecordedAgain()
     {
         // 2.x passed an undefined gateway variable to addInvoicePayment().
+        // Only columns WHMCS 8.13 has too (9.0 added `type`).
         $token = 'legacytoken' . bin2hex(random_bytes(6));
         Capsule::table('tblaccounts')->insert(array(
             'userid' => Whmcs::clientId('CLP'), 'currency' => 0, 'gateway' => '', 'date' => date('Y-m-d H:i:s'),
-            'description' => 'Invoice Payment (2.x)', 'amountin' => 1, 'transid' => $token, 'invoiceid' => 0, 'type' => '',
+            'description' => 'Invoice Payment (2.x)', 'amountin' => 1, 'transid' => $token, 'invoiceid' => 0,
         ));
 
         try {

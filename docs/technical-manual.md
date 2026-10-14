@@ -31,6 +31,7 @@ khipu/                          Library, no WHMCS dependencies (namespace KhipuW
   RefundRules.php               Refund amount mapping, Khipu error grammar, outcome rules
   RefundProcessor.php           The refund flow, answering in WHMCS's _refund shape
   Gateway.php                   Small helpers shared by the WHMCS entry points
+  whmcs.json, logo.png          What Apps & Integrations shows: category, description, support links, logo
 
 tests/                          PHPUnit 8.5 on the library (no WHMCS, no network)
 tests-integration/              PHPUnit inside the dev WHMCS, against the Khipu demo account

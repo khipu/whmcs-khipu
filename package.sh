@@ -19,7 +19,7 @@ mkdir -p "$gateways/callback" "$gateways/khipu" dist
 
 cp khipu.php "$gateways/"
 cp callback/khipu.php callback/khipu_redirect.php "$gateways/callback/"
-cp khipu/*.php "$gateways/khipu/"
+cp khipu/*.php khipu/whmcs.json khipu/logo.png "$gateways/khipu/"
 
 rm -f dist/whmcs-khipu.zip
 (cd "$stage" && zip -qr - modules) > dist/whmcs-khipu.zip
