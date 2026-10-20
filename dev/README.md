@@ -106,7 +106,8 @@ signature*), another receiver id (400 *Wrong receiver*), an invented `payment_id
 Needs a real payment from an account with the refund wallet enabled. As admin, open the
 paid invoice → **Refund** tab → pick the Khipu transaction → Refund Type **Refund through Gateway**.
 `./last-payments.sh` shows the refund row (`refundid` pointing at the payment) and the
-gateway log entry with `resultado`. The wallet balance shows in Billing > Transactions List.
+gateway log entry with `resultado`. The wallet balance shows in Billing > Transactions List
+and on top of Khipu's settings in Configuration > System Settings > Payment Gateways.
 
 ## 5. Integration tests
 

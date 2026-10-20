@@ -136,11 +136,17 @@ que verás en el registro de pasarela pueden llamarlas *devoluciones*: es lo mis
 
 ### Saldo de la billetera
 
-Los administradores con rol **Full Administrator** (o con el permiso **Ver los saldos de
-Gateway**, *View Gateway Balances*) ven el saldo de la billetera de reversas en
-**Facturación → Listado de transacciones** (*Billing → Transactions List*), en el bloque
-**Saldos Gateway** (*Gateway Balances*). Si no aparece, la billetera no está habilitada o
-Khipu no respondió a tiempo; recarga la página.
+El saldo de la billetera de reversas aparece en dos lugares:
+
+- Arriba de la configuración de Khipu, en **Configuración → Ajustes → Pasarelas de pago**
+  (*Configuration → System Settings → Payment Gateways*). Si no se puede mostrar, ahí
+  mismo dice por qué: la billetera no está habilitada, la API Key no es válida, tu cuenta no
+  tiene permiso para consultarla o Khipu no respondió a tiempo.
+- En **Facturación → Listado de transacciones** (*Billing → Transactions List*), en el
+  bloque **Saldos Gateway** (*Gateway Balances*), para los administradores con rol **Full
+  Administrator** (o con el permiso **Ver los saldos de Gateway**, *View Gateway
+  Balances*). Si no aparece, la billetera no está habilitada o Khipu no respondió a
+  tiempo; recarga la página.
 
 ### Cómo reversar
 

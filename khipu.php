@@ -37,7 +37,7 @@ function khipu_MetaData()
 function khipu_config()
 {
     // `receiver_id` and `secret` keep their 2.x names so upgraded installs keep their values.
-    return array(
+    $config = array(
         'FriendlyName' => array(
             'Type' => 'System',
             'Value' => 'Khipu',
@@ -61,6 +61,46 @@ function khipu_config()
             'Description' => 'Verifica las notificaciones de pago de Khipu.',
         ),
     );
+
+    $walletNote = khipu_wallet_note();
+    if ('' !== $walletNote) {
+        $config['UsageNotes'] = array('Type' => 'System', 'Value' => $walletNote);
+    }
+
+    return $config;
+}
+
+/**
+ * Refund wallet balance shown on top of the gateway settings. Only that page
+ * asks Khipu: a slow answer must not delay any other page that loads this
+ * configuration.
+ */
+function khipu_wallet_note()
+{
+    static $loading = false;
+
+    $script = isset($_SERVER['SCRIPT_NAME']) ? basename((string) $_SERVER['SCRIPT_NAME']) : '';
+    if ($loading || !defined('ADMINAREA') || 'configgateways.php' !== $script) {
+        return '';
+    }
+
+    // getGatewayVariables() can load this configuration again.
+    $loading = true;
+    try {
+        if (!function_exists('getGatewayVariables')) {
+            require_once ROOTDIR . '/includes/gatewayfunctions.php';
+        }
+        $params = getGatewayVariables(Gateway::MODULE);
+    } finally {
+        $loading = false;
+    }
+
+    $apiKey = Gateway::param(isset($params['api_key']) ? $params['api_key'] : '');
+    if ('' === $apiKey) {
+        return '';
+    }
+
+    return Gateway::html(RefundRules::walletBalanceText(Client::withTimeouts($apiKey, Client::DISPLAY_TIMEOUTS)->getWalletBalance()));
 }
 
 /**

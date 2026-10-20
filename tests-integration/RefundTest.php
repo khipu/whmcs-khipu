@@ -1,11 +1,14 @@
 <?php
 
+use KhipuWhmcs\Gateway;
+use KhipuWhmcs\RefundRules;
 use PHPUnit\Framework\TestCase;
 use WHMCS\Database\Capsule;
 use WHMCS\Module\Gateway\Balance;
 
 /**
- * khipu_refund() and khipu_account_balance() against the demo account.
+ * khipu_refund(), khipu_account_balance() and the wallet note of
+ * khipu_config() against the demo account.
  *
  * The tests marked as such move demo money: they refund small amounts of a
  * paid payment created by `dev/integration-test.sh <version> seed`.
@@ -100,6 +103,37 @@ class RefundTest extends TestCase
     public function testWalletBalanceWithARejectedKeyRendersNothing()
     {
         $this->assertCount(0, khipu_account_balance(array_merge(Whmcs::params(), array('api_key' => 'not-a-valid-key')))->all());
+    }
+
+    public function testConfigurationOutsideTheSettingsPageAsksKhipuNothing()
+    {
+        $this->assertArrayNotHasKey('UsageNotes', khipu_config());
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testSettingsPageShowsTheWalletBalance()
+    {
+        define('ADMINAREA', true);
+        $_SERVER['SCRIPT_NAME'] = '/admin/configgateways.php';
+
+        // The balance endpoint sometimes takes longer than the page's 6 s.
+        for ($try = 0; $try < 3; $try++) {
+            $note = khipu_config()['UsageNotes'];
+            if (false === strpos($note['Value'], 'Recarga la página')) {
+                break;
+            }
+        }
+
+        // A balance slower than 6 s every time still shows the timeout note, which is correct.
+        $timedOut = RefundRules::walletBalanceText(array('ok' => false, 'http' => 0, 'errors' => array()));
+        $this->assertSame('System', $note['Type']);
+        $this->assertContains($note['Value'], array(
+            Gateway::html(RefundRules::walletBalanceText(Whmcs::khipu()->getWalletBalance())),
+            Gateway::html($timedOut),
+        ));
     }
 
     // --- demo money from here on ---------------------------------------------

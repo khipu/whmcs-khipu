@@ -149,6 +149,56 @@ class RefundRulesTest extends TestCase
         $this->assertSame(array(), RefundRules::parseErrors(array('errors' => 'texto')));
     }
 
+    private function balanceResult($status, $body)
+    {
+        $ok = 200 === $status;
+
+        return array(
+            'ok' => $ok,
+            'http' => $status,
+            'data' => $ok ? $body : array(),
+            'errors' => $ok ? array() : RefundRules::parseErrors($body),
+        );
+    }
+
+    public function testWalletBalanceTextShowsTheBalanceInItsCurrency()
+    {
+        $this->assertSame(
+            'Saldo de la billetera de reversas: 1.234.567 CLP.',
+            RefundRules::walletBalanceText($this->balanceResult(200, array('balance' => '1234567.0000', 'currency' => 'CLP')))
+        );
+        $this->assertSame(
+            'Saldo de la billetera de reversas: 1.234,50 PEN.',
+            RefundRules::walletBalanceText($this->balanceResult(200, array('balance' => '1234.5000', 'currency' => 'pen')))
+        );
+    }
+
+    public function testWalletBalanceTextExplainsADisabledWallet()
+    {
+        $result = $this->balanceResult(403, array('errors' => array(array('field' => 'receiver_id', 'message' => 'La cuenta de cobro con ID 1 no está habilitada para hacer reversas.'))));
+
+        $this->assertStringContainsString('no está habilitada', RefundRules::walletBalanceText($result));
+    }
+
+    public function testWalletBalanceTextBlamesARejectedApiKey()
+    {
+        $this->assertStringContainsString('API Key', RefundRules::walletBalanceText($this->balanceResult(401, array('message' => 'Unauthorized'))));
+    }
+
+    public function testWalletBalanceTextDoesNotBlameTheKeyForMissingPrivileges()
+    {
+        $text = RefundRules::walletBalanceText($this->balanceResult(403, array('message' => 'Forbidden')));
+
+        $this->assertStringContainsString('no tiene permiso', $text);
+        $this->assertStringNotContainsString('API Key', $text);
+    }
+
+    public function testWalletBalanceTextAsksToReloadWhenKhipuDoesNotAnswer()
+    {
+        $this->assertStringContainsString('Recarga la página', RefundRules::walletBalanceText($this->balanceResult(0, null)));
+        $this->assertStringContainsString('Recarga la página', RefundRules::walletBalanceText($this->balanceResult(503, null)));
+    }
+
     public function testWalletDisabledIsRecognisedByFieldOrMessage()
     {
         $this->assertTrue(RefundRules::isWalletDisabled(array(array('field' => 'receiver_id', 'message' => 'x'))));

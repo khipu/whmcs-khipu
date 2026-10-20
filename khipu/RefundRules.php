@@ -378,4 +378,36 @@ class RefundRules
                 return 'Causas posibles: el pago ya fue reversado por completo, se reversó por otro medio o pasaron más de 180 días desde su conciliación.';
         }
     }
+
+    /**
+     * Line about the refund wallet for the gateway settings screen.
+     *
+     * @param array $result Client::getWalletBalance() result
+     *
+     * @return string
+     */
+    public static function walletBalanceText(array $result)
+    {
+        if ($result['ok']) {
+            $currency = strtoupper((string) $result['data']['currency']);
+            $balance = number_format((float) $result['data']['balance'], Client::amountPrecision($currency), ',', '.');
+
+            return 'Saldo de la billetera de reversas: ' . $balance . ' ' . $currency . '.';
+        }
+
+        if (self::isWalletDisabled($result['errors'])) {
+            return 'La billetera de reversas no está habilitada en tu cuenta Khipu. Solicítala a soporte@khipu.com.';
+        }
+
+        // Khipu answers 401 for bad credentials and 403 for a valid key without the privilege.
+        if (401 === $result['http']) {
+            return 'Khipu rechazó la API Key configurada: no se pudo consultar el saldo de la billetera de reversas.';
+        }
+
+        if (403 === $result['http']) {
+            return 'Tu cuenta Khipu no tiene permiso para consultar la billetera de reversas. Escribe a soporte@khipu.com.';
+        }
+
+        return 'No se pudo consultar el saldo de la billetera de reversas en Khipu. Recarga la página para intentarlo de nuevo.';
+    }
 }

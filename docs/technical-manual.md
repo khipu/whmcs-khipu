@@ -51,7 +51,7 @@ three WHMCS entry points only read WHMCS state, call the library, and write WHMC
 | Function | WHMCS calls it | What it does |
 |---|---|---|
 | `khipu_MetaData` | Module load | Display name, API version 1.1, no local card input |
-| `khipu_config` | Gateway settings page | `api_key`, `receiver_id`, `secret` (2.x key names kept; `secret` is now a `password` field, and the plaintext value 2.x stored still reads back intact, verified on 9.0.9) |
+| `khipu_config` | Gateway settings page | `api_key`, `receiver_id`, `secret` (2.x key names kept; `secret` is now a `password` field, and the plaintext value 2.x stored still reads back intact, verified on 9.0.9). On `admin/configgateways.php` only, a `UsageNotes` line with the refund wallet balance (§3.3) |
 | `khipu_link` | Every invoice view, order completion | Renders the signed pay form. No network call |
 | `khipu_refund` | Admin refund with *Refund through Gateway* | `RefundProcessor` |
 | `khipu_account_balance` | Billing > Transactions List, *Gateway Balances* (WHMCS 8.2+) | Refund wallet balance, or nothing |
@@ -202,13 +202,13 @@ admin sees a generic failure and the module's `rawdata` goes to the gateway log,
 |---|---|---|
 | `GET /v3/payments/{id}` | Before refunding (currency, `custom`, refund snapshot); after an unknown outcome | `payment_id`, `receiver_id`, `status`, `amount`, `currency` |
 | `POST /v3/refunds` | `type: partial` with `amount` | `id`, `payment_id`, `refunded_amount`, `total_refunded`, `remaining` |
-| `GET /v3/refund-wallet/balance` | `khipu_account_balance()` | `balance`, `currency` |
+| `GET /v3/refund-wallet/balance` | `khipu_account_balance()`, `khipu_wallet_note()` | `balance`, `currency` |
 
 A 200 without its required fields is not a success: a proxy or WAF answering
 `200 {"message": …}` must not be recorded as a refund.
 
 Timeouts: 10 s / 20 s for refunds and the webhook, 3 s / 6 s for the balance (it renders
-inside Billing > Transactions List).
+inside Billing > Transactions List and the gateway settings page).
 
 ### 3.2 `RefundProcessor::refund()`
 
@@ -266,6 +266,16 @@ inside Billing > Transactions List).
 API), shown in Billing > Transactions List (*Gateway Balances*) to Full Administrators or
 roles with the *View Gateway Balances* permission. When the wallet is disabled or Khipu does not answer in time it returns an
 empty collection: that page must render regardless.
+
+The gateway settings page shows the same balance on top, as a `UsageNotes` entry that
+`khipu_config()` adds through `khipu_wallet_note()`. Unlike the Transactions List block,
+it says why the balance is missing (`RefundRules::walletBalanceText()`: wallet disabled,
+API Key rejected (401), key without the privilege (403), no answer). It asks Khipu only when `ADMINAREA` is defined and the
+script is `configgateways.php`, so no other page that loads the configuration waits on
+Khipu. It reads the API Key with `getGatewayVariables()` (the stored settings are
+encrypted) behind a re-entrancy guard, in case that call loads the configuration again.
+Anyone allowed to configure payment gateways sees it, not only roles with *View Gateway
+Balances*.
 
 A disabled wallet is detected by `field === 'receiver_id'`; the text match
 (`RefundRules::WALLET_DISABLED_NEEDLE`) is a fallback cut before the noun, so a change
