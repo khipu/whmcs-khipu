@@ -1,0 +1,69 @@
+# Local WHMCS to try the module. Use ./up.sh, which picks the PHP version,
+# port and project name for the WHMCS version:
+#
+#   ./setup.sh ~/Downloads/whmcs_v909_full.zip     once per version
+#   ./up.sh 9.0.9                                   http://localhost:8090
+#   ./up.sh 8.13.7                                  http://localhost:8091
+#
+# The module is mounted from the repository, so editing a file shows on reload.
+
+services:
+  db:
+    image: mysql:8.0
+    # WHMCS requires MySQL strict mode off.
+    command: --sql-mode=""
+    environment:
+      MYSQL_ROOT_PASSWORD: whmcs
+      MYSQL_DATABASE: whmcs
+      MYSQL_USER: whmcs
+      MYSQL_PASSWORD: whmcs
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pwhmcs"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - db:/var/lib/mysql
+
+  whmcs:
+    build:
+      context: .
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${WHMCS_PORT:-8090}:80"
+    environment:
+      # Apache runs as you, so WHMCS can write configuration.php and
+      # templates_c in the mounted tree without chmod 777.
+      APACHE_RUN_USER: "#${HOST_UID:-1000}"
+      APACHE_RUN_GROUP: "#${HOST_GID:-1000}"
+    volumes:
+      - ./whmcs/${WHMCS_VERSION:-9.0.9}:/var/www/html
+      # The module, live from the repository. khipu.php and khipu/ are
+      # symlinks into /opt/khipu-module (setup.sh makes them): PHP resolves
+      # both to one real path, so the library never loads twice. The callbacks
+      # find init.php through __DIR__/../../.., so they cannot be symlinks;
+      # their directory is mounted instead, which hides the bundled gateways'
+      # callbacks in this dev install. Directory mounts and symlinks, never
+      # single-file mounts: an editor that saves by replacing a file leaves a
+      # single-file mount on the old copy.
+      - ..:/opt/khipu-module:ro
+      # install-module.sh points this at the tree's own callback directory
+      # when the module is installed from a zip or an old release instead.
+      - ${KHIPU_CALLBACK_SOURCE:-../callback}:/var/www/html/modules/gateways/callback:${KHIPU_CALLBACK_ACCESS:-ro}
+
+  # Public https URL: Khipu refuses a notify_url on localhost. Started by
+  # ./tunnel.sh, which also points WHMCS's System URL at it.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://whmcs:80
+    depends_on:
+      - whmcs
+    profiles:
+      - tunnel
+
+volumes:
+  db:

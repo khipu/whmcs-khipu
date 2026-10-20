@@ -1,0 +1,31 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "khipu",
+  "category": "payments",
+  "description": {
+    "name": "Khipu",
+    "tagline": "Permite pagar usando cuentas bancarias.",
+    "long": "Permite el uso de Khipu en WHMCS. Khipu es un medio de pago que permite pagar usando cuentas bancarias: tus clientes pagan sus facturas con una transferencia y WHMCS registra el pago cuando Khipu lo confirma. Desde la misma factura puedes hacer reversas totales o parciales con la billetera de reversas de Khipu.\n\n**Aviso legal:** este módulo no está afiliado ni respaldado por WHMCS Limited. «WHMCS» es una marca registrada de WHMCS Limited.\n\n### Servicios externos\n\nEste módulo se conecta a la API de pagos de Khipu para crear, consultar y reversar pagos.\n\n- **¿Qué datos se envían y cuándo?** Al crear un pago: el monto a cobrar y su moneda; el número, la descripción, el monto y la moneda de la factura; el correo del cliente, y las direcciones de retorno y de notificación. Al consultar o reversar un pago: su identificador y, en una reversa, el monto. Al mostrar el saldo de la billetera de reversas, solo tu API Key.\n- **¿Por qué?** Para iniciar los pagos, confirmarlos y hacer reversas desde WHMCS.\n- **¿Dónde puedo revisar las políticas?** Términos del servicio y política de privacidad de Khipu: https://khipu.com\n- **¿A quién contacto en caso de dudas o problemas?** En caso de cualquier problema con el módulo y su configuración, puedes escribirnos a soporte@khipu.com",
+    "features": [
+      "Pago con cuenta bancaria desde la factura o al terminar el pedido.",
+      "La factura queda pagada cuando Khipu confirma el pago.",
+      "Reversas totales y parciales desde la factura.",
+      "Saldo de la billetera de reversas en Facturación > Listado de transacciones."
+    ]
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "support": {
+    "homepage": "https://khipu.com/",
+    "email": "soporte@khipu.com",
+    "docs_url": "https://github.com/khipu/whmcs-khipu/blob/master/docs/manual-comercio.md"
+  },
+  "authors": [
+    {
+      "name": "Khipu",
+      "homepage": "https://khipu.com/"
+    }
+  ]
+}

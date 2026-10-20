@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Integration suite: runs inside the dev WHMCS container against the real
+  Khipu API (demo account). Use dev/integration-test.sh, not this file directly.
+-->
+<phpunit bootstrap="tests-integration/bootstrap.php"
+         colors="true"
+         cacheResult="false">
+    <testsuites>
+        <testsuite name="integration">
+            <directory>tests-integration</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

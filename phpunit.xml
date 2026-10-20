@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  No schema and no version-specific options: the suite runs on PHPUnit 8.5,
+  the last one that installs on PHP 7.2 and still runs on 8.x.
+-->
+<phpunit bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheResult="false">
+    <testsuites>
+        <testsuite name="khipu">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
